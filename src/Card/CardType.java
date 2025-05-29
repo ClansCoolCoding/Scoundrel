@@ -1,13 +1,13 @@
 package src.Card;
 
-public enum Type {
+public enum CardType {
     HEALING("H"),
     WEAPON("W"),
     ENEMY("E");
 
     public final String label;
 
-    private Type(String label) {
+    private CardType(String label) {
         this.label = label;
     }
 
