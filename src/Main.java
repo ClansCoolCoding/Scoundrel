@@ -26,7 +26,7 @@ public class Main {
         String input = "test";
 
         while(input.toLowerCase().charAt(0) != 'y' && input.toLowerCase().charAt(0) != 'n'){
-            System.out.println("Do you want to continue? [y / n]: ");
+            System.out.println("Do you want to continue by playing a new dungeon? [y / n]: ");
             input = scn.nextLine();
             if(input.isEmpty()){
                 input = "test";
