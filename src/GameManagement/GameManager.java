@@ -55,8 +55,8 @@ public class GameManager {
     public void playDungeon() {
         this.printCurrentGameState();
 
-        CardHandler state = CardHandler.SUCCESS;
-        String input = "";
+        CardHandler state;
+        String input;
 
         while (gameIsGoing) {
             //Get the input of the player
@@ -64,49 +64,15 @@ public class GameManager {
             input = scanner.nextLine();
             input = input.toLowerCase();
 
-            //Check if conditions are met (at least 2 long, having a number in front)
-            if (input.isEmpty()){
-                System.out.println("You have to enter an input");
-
-            }else if (input.equalsIgnoreCase("help")) {
-                this.printHelp();
-
-            }else if (input.equalsIgnoreCase("flee")) {
-                if (this.fledLastRoom) {
-                    System.out.println("You have already fled the last room, so you cant flee this room!");
-                }else {
-                    this.fledLastRoom = true;
-
-                    for(int i = 0; i < 4; i++){
-                        dungeon.add(room[i]);
-                        room[i] = dungeon.removeFirst();
-                    }
-
-                    System.out.println("You have successfully fled this room!");
-                    this.printCurrentGameState();
-                }
-
-            }else if (input.equalsIgnoreCase("state")) {
-                this.printCurrentGameState();
-
-            }else if (input.equalsIgnoreCase("exit")) {
+            //exit the game if player wants to exit
+            if(input.equalsIgnoreCase("exit")){
                 return;
+            }
 
-            }else if (parseToInt(input.charAt(0)) == -1) {
-                System.out.println("You have to enter a number to specify a card [1 - 4], or one of the commands [help, flee, exit]");
-
-            }else if (room[parseToInt(input.charAt(0))] == null) {
-                System.out.println("You allready have played this card");
-
-            }else {
+            //Check if conditions are met (at least 2 long, having a number in front)
+            if (validInput(input)) {
                 //make the move
-                Card selectedCard = room[parseToInt(input.charAt(0))];
-                if(input.length() == 1) {
-                    state = playerInfo.handleCard(selectedCard, CombatType.NOT_TO_BE_SPECIFIED);
-                }else {
-                    CombatType combatType = parseCombatType(input.charAt(1));
-                    state = playerInfo.handleCard(selectedCard, combatType);
-                }
+                state = makeMove(input);
 
                 //handle the returned value
                 switch (state) {
@@ -118,18 +84,7 @@ public class GameManager {
                         break;
                     }
                     default: {
-                        System.out.println("Your action was successful");
-                        room[parseToInt(input.charAt(0))] = null;
-                        this.checkToRefill();
-                        this.checkWon();
-
-                        if(dungeonWon) {
-                            System.out.println("You won!");
-                            this.gameIsGoing = false;
-                            return;
-                        }
-
-                        this.printCurrentGameState();
+                        handleOutcomeOfMoveSuccess(input);
                         break;
                     }
                 }
@@ -162,45 +117,6 @@ public class GameManager {
             }
         }
         System.out.println();
-    }
-
-    private void printHelp() {
-        System.out.println("""
-                
-                You are now asked to enter your next move.
-                To specify which card you want to attack or use specify the nubmer of the card.
-                The cards are labeled from 1 to 4 from left to right
-                The cards are all labled the same
-                
-                W is a weapon,        seleting this card will make you pick it up
-                H is a health potion, selecting it will heal you upt to the amount specified by the card or to your max health
-                E is an enemy,        the value specified is his strength
-                
-                When you select an enemy, you have to specify if you want to fight it with your bare hands [h] or with you weapon [w].
-                Fighting an enemy with your bare hands means his strength will get subtracted directly from your health points.
-                You may choose to fight an enemy with your weapon only if your weapon is strong enough.
-                Your weapon is strong enough if either you just picked it up or the last enemy fought with this weapon has a higher strength value than the enemy you are trying to fight.
-                If your weapon is not strong enough (the last beaten enemy was stronger than the current one) the game will tell you.
-                When you select an enemy, with no weapon equipped, you will fight it with your bare hands.
-                The cards left in the dungeon are specified to the left of the current cards.
-                
-                You may flee a room with the command flee.
-                This will bring you to a new room, while the old room is brought back deep into the dungeon.
-                This only works if you havent fled the last room you were in
-                
-                You loose the dungeon if you have no health points.
-                You win the dungeon if you defeat all cards in the dungeon.
-                
-                So a valid input looks something like: (with out the [])
-                [1] -> interact with card in slot 1
-                [2w] -> fight the enemy in slot 2 with your weapon
-                [3h] -> fight the enemy in slot 3 with your bare hand
-                [flee] -> flee this room
-                [exit] -> exit the dungeon
-                [help] -> get back to this menu
-                
-                """);
-        this.printCurrentGameState();
     }
 
     private int parseToInt(char c) {
@@ -263,5 +179,79 @@ public class GameManager {
                 this.dungeonWon = true;
             }
         }
+    }
+
+    //the functions needed to make a move
+    private boolean validInput(String input) {
+        if (input.isEmpty()){
+            System.out.println("You have to enter an input");
+            return false;
+
+        }else if (input.equalsIgnoreCase("help")) {
+            GameHelper.printHelp();
+            this.printCurrentGameState();
+            return false;
+
+        }else if (input.equalsIgnoreCase("flee")) {
+            if (this.fledLastRoom) {
+                System.out.println("You have already fled the last room, so you cant flee this room!");
+            }else {
+                this.fledLastRoom = true;
+
+                for(int i = 0; i < 4; i++){
+                    dungeon.add(room[i]);
+                    room[i] = dungeon.removeFirst();
+                }
+
+                System.out.println("You have successfully fled this room!");
+                this.printCurrentGameState();
+            }
+            return false;
+
+        }else if (input.equalsIgnoreCase("state")) {
+            this.printCurrentGameState();
+            return false;
+
+        }else if (parseToInt(input.charAt(0)) == -1) {
+            System.out.println("You have to enter a number to specify a card [1 - 4], or one of the commands [help, flee, exit]");
+            return false;
+
+        }else if (room[parseToInt(input.charAt(0))] == null) {
+            System.out.println("You allready have played this card");
+            return false;
+
+        }else {
+            return true;
+        }
+    }
+
+    private CardHandler makeMove(String input) {
+        CardHandler state;
+
+        Card selectedCard = room[parseToInt(input.charAt(0))];
+        if(input.length() == 1) {
+            state = playerInfo.handleCard(selectedCard, CombatType.NOT_TO_BE_SPECIFIED);
+        }else {
+            CombatType combatType = parseCombatType(input.charAt(1));
+            state = playerInfo.handleCard(selectedCard, combatType);
+        }
+
+        return state;
+    }
+
+    private void handleOutcomeOfMoveSuccess(String input) {
+
+        System.out.println("Your action was successful");
+        room[parseToInt(input.charAt(0))] = null;
+        this.checkToRefill();
+        this.checkWon();
+
+        if(dungeonWon) {
+            System.out.println("You won!");
+            this.gameIsGoing = false;
+            return;
+        }
+
+        this.printCurrentGameState();
     }
 }
