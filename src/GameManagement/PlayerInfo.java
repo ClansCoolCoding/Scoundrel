@@ -39,14 +39,25 @@ public class PlayerInfo {
                     }
 
                     case WITH_WEAPON -> {
-                        if(getLastBeaten().value <= card.value){
+                        if (this.getWeapon() == null) {
+                            return this.handleCard(card, CombatType.BARE_HANDED);
+                        } else if(getLastBeaten() != null && getLastBeaten().value <= card.value){
                             return CardHandler.PROBLEM_WEAPON_TO_WEAK;
-                        }else{
+                        } else {
                             int damage = card.value - getWeapon().value;
                             setHealth(Math.max(0, getHealth() - damage));
+                            setLastBeaten(card);
                             if(getHealth() == 0){
                                 return CardHandler.PROBLEM_NO_HEALTH;
                             }
+                        }
+                    }
+
+                    default -> {
+                        if (this.getWeapon() == null) {
+                            return this.handleCard(card, CombatType.BARE_HANDED);
+                        } else {
+                            return CardHandler.PROBLEM_NO_COMBAT_TYPE;
                         }
                     }
                 }
@@ -58,6 +69,11 @@ public class PlayerInfo {
 
     @Override
     public String toString() {
+        if (this.getWeapon() == null) {
+            return "Health: " + health +", Weapon: you dont have a weapon -> you might pick one up";
+        }else if (this.getLastBeaten() == null) {
+            return "Health: " + health +", Weapon: [ " + this.getWeapon().value + " ], Last Beaten: you havent used this weapon yet";
+        }
         return "Health: " + health +", Weapon: [ " + this.getWeapon().value + " ], Last Beaten: [ " + this.getLastBeaten().value + " ]";
     }
 
@@ -71,11 +87,6 @@ public class PlayerInfo {
     }
 
     private Card getWeapon() {
-
-        if(this.weapon == null){
-            return new Card(0, CardType.WEAPON);
-        }
-
         return weapon;
     }
 
@@ -84,11 +95,6 @@ public class PlayerInfo {
     }
 
     private Card getLastBeaten() {
-
-        if(this.lastBeaten == null){
-            return new Card(0, CardType.ENEMY);
-        }
-
         return lastBeaten;
     }
     private void setLastBeaten(Card lastBeaten) {
