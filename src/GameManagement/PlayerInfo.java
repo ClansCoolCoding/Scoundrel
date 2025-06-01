@@ -44,7 +44,7 @@ public class PlayerInfo {
                         } else if(getLastBeaten() != null && getLastBeaten().value <= card.value){
                             return CardHandler.PROBLEM_WEAPON_TO_WEAK;
                         } else {
-                            int damage = card.value - getWeapon().value;
+                            int damage = Math.max(0, card.value - getWeapon().value);
                             setHealth(Math.max(0, getHealth() - damage));
                             setLastBeaten(card);
                             if(getHealth() == 0){
