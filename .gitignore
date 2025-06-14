@@ -1,1 +1,5 @@
+#no need for the internaly compiled code
 out/
+
+# Ignore JetBrains IDE settings
+.idea/
