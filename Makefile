@@ -1,8 +1,19 @@
+# Detect OS
+ifeq ($(OS),Windows_NT)
+    RM = wsl rm -rf
+    MKDIR = wsl mkdir
+    TIME = wsl time
+else
+    RM = rm -rf
+    MKDIR = mkdir -p
+    TIME = time
+endif
+
 all: clean compile run
 
 clean:
 	@echo cleaning all the files
-	wsl rm -rf out
+	$(RM) out
 	@echo finished cleaning
 
 compile: out
@@ -15,7 +26,7 @@ compile: out
 	@echo finished compiling
 
 out:
-	wsl mkdir "out"
+	$(MKDIR) out
 
 run:
 	java -cp out src.Main
